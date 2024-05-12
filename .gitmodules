@@ -1,0 +1,3 @@
+[submodule "zasm"]
+	path = zasm
+	url = git@github.com:Megatokio/zasm.git

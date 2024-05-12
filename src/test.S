@@ -10,17 +10,18 @@ _start:
     ld (hl), 0xFF ; enable gpio 0
     ld hl, GPIO_ACCESS_ADDR
     ld (hl), 0xFF ; set gpio 0
-    ld d, 0xFF
-_loop:
+_flip:
     ld a, (hl)
     cpl
     ld (hl), a
-    ld b, 0x4
+    ld d, 0xFF
+_loop:
+    ld b, 0xFF
 _wait:
     djnz _wait
     dec d
-    jp z, _done
-    jp _loop
+    jp nz, _loop
+    jp _flip
 _done:
     halt
 

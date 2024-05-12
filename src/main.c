@@ -1,3 +1,4 @@
+#include "hardware/clocks.h"
 #include "incbin.h"
 #include "pico/stdlib.h"
 #include "rom.h"
@@ -48,12 +49,12 @@ uint8_t get_data() {
 
 uint8_t RAM[0x7FFF] = {0};
 
-void drive_data_pins(uint8_t value) {
+void __scratch_x("do_it_fast") drive_data_pins(uint8_t value) {
     uint32_t expanded = ((value >> 7) << DATA7_PIN) | ((value & 0x7F) << DATA0_PIN);
     gpio_put_masked(DATA_MASK, expanded);
 }
 
-void handle_write(uint16_t addr, uint8_t value) {
+void __scratch_x("do_it_fast") handle_write(uint16_t addr, uint8_t value) {
     if (addr <= 0x2000) {
         // ROM write, ignore
     } else if (addr <= 0x7FFF) {
@@ -63,7 +64,7 @@ void handle_write(uint16_t addr, uint8_t value) {
     }
 }
 
-void read_map(uint16_t addr) {
+void __scratch_x("do_it_fast") handle_read(uint16_t addr) {
     uint8_t value;
     if (addr <= 0x2000) {
         value = rom[addr];
@@ -75,24 +76,29 @@ void read_map(uint16_t addr) {
     drive_data_pins(value);
 }
 
-void handle_bus() {
+void __scratch_x("do_it_fast") handle_bus() {
     while (true) {
         uint16_t addr = get_addr();
-        read_map(addr);
+        bool write = addr > 0x2000;
+        if (write) {
+            set_data_pins_in();
+            uint8_t value = get_data();
+            addr = get_addr();
+            // printf("got write! addr %x, data %x\n", addr, value);
+            handle_write(addr, value);
+        } else {
+            set_data_pins_out();
+            handle_read(addr);
+        }
     }
-    /*
-    bool write = gpio_get(W_NR_PIN);
-    if (write) {
-        uint8_t value = get_data();
-        handle_write(addr, value);
-    } else {
-        uint8_t value = read_map(addr);
-        drive_data_pins(value);
-    }
-    */
 }
 
-int main() {
+#define PLL_SYS_KHZ (200 * 1000)
+
+int __scratch_x("do_it_fast") main() {
+    // Set clock to 200mhz
+    set_sys_clock_khz(PLL_SYS_KHZ, true);
+
     stdio_init_all();
     gpio_init(25);
     gpio_set_dir(25, GPIO_OUT);
@@ -110,7 +116,5 @@ int main() {
     // Set up W/!R pin
     gpio_set_dir_in_masked(W_NR_MASK);
 
-    while (true) {
-        handle_bus();
-    }
+    handle_bus();
 }

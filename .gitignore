@@ -1,2 +1,10 @@
 build
 .cache
+*.log
+*.aux
+*.fdb_*
+*.out
+*.gz
+*#auto_saved_files#
+*.lck
+*.zip

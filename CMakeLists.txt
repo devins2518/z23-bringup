@@ -51,12 +51,13 @@ add_custom_command(TARGET ${PROJECT}
 
 check_ipo_supported(RESULT supported OUTPUT error)
 # Enable LTO
-if(supported)
-    message(STATUS "IPO / LTO enabled")
-    set_property(TARGET ${PROJECT} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-else()
-    message(STATUS "IPO / LTO not supported: <${error}>")
-endif()
+## Pico SDK generally doesn't support LTO currently
+# if(supported)
+#     message(STATUS "IPO / LTO enabled")
+#     set_property(TARGET ${PROJECT} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+# else()
+#     message(STATUS "IPO / LTO not supported: <${error}>")
+# endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -Wl,--gc-sections")
 
 target_link_libraries(${PROJECT} pico_stdlib)

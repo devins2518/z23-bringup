@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "btb16-800sw")(type "KiCad")(uri "/Users/devin/Repos/z23-bringup/layout/btb16-800sw.kicad_sym")(options "")(descr ""))
+)
